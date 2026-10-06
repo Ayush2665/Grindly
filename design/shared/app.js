@@ -1,8 +1,15 @@
-/* Grindly design mockup renderer. Static data only: nothing here is real money or real Watch data. */
+/* =====================================================================
+   FRONTEND · shared/app.js   (all three looks use this file)
+   WHAT IT DOES: draws the 6 screens and handles taps. Uses made-up sample data.
+   WHAT IT IS NOT: no server, no real money, no real Apple Watch data.
+   LATER: the real version will be Next.js; money and day-verification will
+   live in the BACKEND, never in the browser.
+   Sections below: MONEY FORMAT · ICONS · SAMPLE DATA · SCREENS · NAV · CREATE-GOAL CALCULATOR · SHELL
+   ===================================================================== */
 (function () {
   const $ = (s, r = document) => r.querySelector(s);
 
-  // ---- money: integer paise only ----
+  // ---- [MONEY FORMAT] shows paise (whole numbers) as rupees. Never uses decimals for maths ----
   const inr = (paise) => {
     const sign = paise < 0 ? "-" : "";
     const abs = Math.abs(paise);
@@ -10,7 +17,7 @@
     return sign + "₹" + r.toLocaleString("en-IN") + (p ? "." + String(p).padStart(2, "0") : "");
   };
 
-  // ---- icons ----
+  // ---- [ICONS] small drawings used on buttons and cards ----
   const I = {
     flame: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.5 3-1.5 4.5-3 6.5C7.7 11.2 7 12.7 7 14.5a5 5 0 0 0 10 0c0-1.6-.6-2.8-1.5-4-.4 1-1 1.6-1.8 2 .3-3-.7-6.5-1.7-9.5Z"/></svg>',
     bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
@@ -27,7 +34,7 @@
     lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   };
 
-  // ---- sample data (consistent with PLAN.md §3.4: must_forfeit = max(0,(R-v)-(W-d))) ----
+  // ---- [SAMPLE DATA] fake contracts. The forfeit rule here copies PLAN.md §3.4; the real one will live in packages/domain ----
   const mustForfeit = (R, v, W, d) => Math.max(0, (R - v) - (W - d));
   const mk = (W, d, v) => { // dot states: first d days, v verified, rest rest-days, then future
     const missed = d - v, a = [];
@@ -54,7 +61,7 @@
   };
   const legend = `<div class="legend"><span><i style="background:var(--dot-on)"></i>Verified</span><span><i style="background:var(--dot-rest)"></i>Rest day</span><span><i style="background:var(--dot-off)"></i>Upcoming</span></div>`;
 
-  // ---- screens ----
+  // ---- [SCREENS] one function per screen: home, create, daily, norisk, wallet, watch ----
   const hero = (hello, head, extra = "") => `
     <div class="hero">
       <div class="top"><div class="avatar">A</div><div class="spacer"></div>
@@ -173,10 +180,11 @@
       <div class="note">Contracts need a sync within the last 24 h. You can revoke a device any time.</div>
     </div>`;
 
+  // [NAV] the 5 round buttons at the bottom
   const NAV = [["home", "flame"], ["daily", "steps"], ["create", "plus"], ["wallet", "wallet"], ["watch", "watch"]];
   const LABEL = { home: "Home", create: "Create goal", daily: "Daily status", norisk: "No Risk", wallet: "Wallet & ledger", watch: "Link Watch" };
 
-  // ---- create-goal live calc ----
+  // ---- [CREATE-GOAL CALCULATOR] rest days = 10% of window; required days = window - rest days; stake = value per day x required days ----
   function wireCreate(root) {
     const st = { goal: "steps", mode: "stake", w: 30, u: 10000 };
     const upd = () => {
@@ -200,7 +208,7 @@
     upd();
   }
 
-  // ---- shell ----
+  // ---- [SHELL + NAV] phone frame, left menu, bottom nav bar, and switching screens by the # in the URL ----
   const theme = window.GRINDLY_THEME || { name: "Direction", blurb: "" };
   function render(route) {
     if (!S[route]) route = "home";

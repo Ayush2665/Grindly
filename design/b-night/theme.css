@@ -1,4 +1,4 @@
-/* Direction B — Ember Night */
+/* FRONTEND LOOK · Ember Night (chosen). Part 1: dark colours. Part 2 ("Night v2"): glow, glass cards, scroll-scene styling. */
 :root {
   --hero-bg: radial-gradient(120% 90% at 20% 0%, #ff6a2a 0%, #b5320f 38%, #2a1510 80%);
   --page-bg: #0c0908; --phone-bg: #15100e;

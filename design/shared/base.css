@@ -1,4 +1,4 @@
-/* Grindly design — shared structure. Themes only override the CSS variables + a few hooks. */
+/* FRONTEND LOOK · shared/base.css: layout, cards, dot grid, buttons, bottom nav. Colours are CSS variables (--accent etc.) so each look can restyle everything from its theme.css. */
 :root {
   --font: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   --hero-bg: linear-gradient(160deg, #ff7a2f 0%, #f2531b 60%, #ff9a55 100%);

@@ -1,9 +1,16 @@
-/* Ember Night — scroll-driven motion layer. Pure presentation; hooks into shared/app.js via afterRender. */
+/* =====================================================================
+   FRONTEND · b-night/fx.js   (only the chosen "Ember Night" look)
+   WHAT IT DOES: adds the scroll animations. The shoe walks and the dumbbell
+   lifts as you scroll; cards fade in; numbers count up.
+   HOW IT PLUGS IN: shared/app.js calls afterRender() after drawing a screen.
+   Presentation only: nothing here touches money or verification.
+   Sections: DRAWINGS (SVG shoe + dumbbell) · SCROLL SCENES · SMALL EFFECTS · THEME HOOK
+   ===================================================================== */
 (function () {
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // ---------- illustrations (inline SVG, no external images) ----------
+  // ---------- [DRAWINGS] the shoe and dumbbell are code-drawn SVG, no image files ----------
   const DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
     <linearGradient id="gOr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa35c"/><stop offset=".55" stop-color="#ff6a1f"/><stop offset="1" stop-color="#c9380d"/></linearGradient>
     <linearGradient id="gSil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6ece5"/><stop offset=".5" stop-color="#b9a89d"/><stop offset="1" stop-color="#6e5f56"/></linearGradient>
@@ -32,7 +39,7 @@
     <path d="M70 32v66M194 32v66" stroke="#000" stroke-opacity=".18" stroke-width="2"/>
   </svg>`;
 
-  // ---------- scrollytelling blocks ----------
+  // ---------- [SCROLL SCENES] sticky cards whose animation follows how far you have scrolled (0 to 1) ----------
   const trail = (n) => Array.from({ length: n }, () => "<i></i>").join("");
 
   const stepsStory = () => `
@@ -94,7 +101,7 @@
     requestAnimationFrame(update);
   }
 
-  // ---------- generic effects ----------
+  // ---------- [SMALL EFFECTS] count-up numbers, fade-in on scroll, ring drawing ----------
   function countUp(el) {
     const m = el.textContent.match(/^(\D*)([\d,]+)(.*)$/); if (!m || reduce) return;
     const target = parseInt(m[2].replace(/,/g, ""), 10), t0 = performance.now();
@@ -118,6 +125,7 @@
     });
   }
 
+  // ---------- [THEME HOOK] name + afterRender(), which app.js calls on every screen ----------
   window.GRINDLY_THEME = {
     name: "B · Ember Night",
     blurb: "Charcoal, orange glow, scroll-driven shoe and dumbbell scenes.",
