@@ -1,4 +1,4 @@
-import type { Db, Queryable } from "@grindly/db";
+import { postTransactionIn, type Db, type Queryable } from "@grindly/db";
 import { addDays, deriveTerms, localDate, stakeForUnit, transition, type GoalType } from "@grindly/domain";
 import { assertWatchReady } from "./devices";
 import { verifyContractDay } from "./verifyDay";
@@ -30,13 +30,22 @@ export async function createContractSimulatedPayment(db: Db, c: NewContract): Pr
     const id = r.rows[0]!.id;
     await tx.query(`UPDATE contracts SET state = $2 WHERE id = $1`, [id, transition("DRAFT", "SUBMIT")]);
     await tx.query(`UPDATE contracts SET state = $2 WHERE id = $1`, [id, transition("AWAITING_PAYMENT", "PAYMENT_CAPTURED")]);
+    // the stake moves from the (test) gateway into this contract's escrow account
+    await postTransactionIn(tx, {
+      key: `contract:${id}:fund`,
+      description: "Funded contract (test payment)",
+      postings: [
+        { account: { kind: "gateway_clearing", owner: "-" }, amount: -t.stake },
+        { account: { kind: "escrow", owner: id }, amount: t.stake },
+      ],
+    });
     return { id, startDate };
   });
 }
 
 export async function listContracts(db: Queryable, userId: string) {
-  const r = await db.query<{ id: string; goal_type: string; state: string; window_days: number; required_days: number; stake_paise: string; unit_paise: string; start_date: string; verified_units: number; days_closed: number }>(
-    `SELECT id, goal_type, state, window_days, required_days, stake_paise, unit_paise, to_char(start_date,'YYYY-MM-DD') AS start_date, verified_units, days_closed
+  const r = await db.query<{ id: string; goal_type: string; state: string; window_days: number; required_days: number; stake_paise: string; unit_paise: string; start_date: string; verified_units: number; forfeited_units: number; days_closed: number }>(
+    `SELECT id, goal_type, state, window_days, required_days, stake_paise, unit_paise, to_char(start_date,'YYYY-MM-DD') AS start_date, verified_units, forfeited_units, days_closed
      FROM contracts WHERE user_id = $1 ORDER BY created_at DESC`, [userId]);
   return r.rows.map((x) => ({ ...x, stake_paise: Number(x.stake_paise), unit_paise: Number(x.unit_paise) }));
 }

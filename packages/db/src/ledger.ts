@@ -15,25 +15,30 @@ async function accountId(t: Queryable, kind: string, owner: string): Promise<str
   return r.rows[0]!.id;
 }
 
-// Write one ledger transaction. Safe to call twice with the same key, including at the same time.
-export async function postTransaction(db: Db, tx: LedgerTx, description = ""): Promise<PostResult> {
+// Write one ledger transaction inside a transaction the caller already opened.
+// Safe to call twice with the same key, including at the same time.
+export async function postTransactionIn(t: Queryable, tx: LedgerTx): Promise<PostResult> {
   assertBalanced(tx);
-  return db.transaction(async (t) => {
-    const ins = await t.query<{ id: string }>(
-      `INSERT INTO ledger_transactions (idempotency_key, description) VALUES ($1, $2)
-       ON CONFLICT (idempotency_key) DO NOTHING RETURNING id`,
-      [tx.key, description],
-    );
-    const txId = ins.rows[0]?.id;
-    if (!txId) return { applied: false };
-    // fixed order so two transactions touching the same accounts cannot deadlock
-    const ordered = [...tx.postings].sort((a, b) => (accountKey(a.account) < accountKey(b.account) ? -1 : 1));
-    for (const p of ordered) {
-      const id = await accountId(t, p.account.kind, p.account.owner);
-      await t.query(`INSERT INTO ledger_entries (transaction_id, account_id, amount_paise) VALUES ($1, $2, $3)`, [txId, id, p.amount]);
-    }
-    return { applied: true };
-  });
+  const ins = await t.query<{ id: string }>(
+    `INSERT INTO ledger_transactions (idempotency_key, description) VALUES ($1, $2)
+     ON CONFLICT (idempotency_key) DO NOTHING RETURNING id`,
+    [tx.key, tx.description ?? ""],
+  );
+  const txId = ins.rows[0]?.id;
+  if (!txId) return { applied: false };
+  // fixed order so two transactions touching the same accounts cannot deadlock
+  const ordered = [...tx.postings].sort((a, b) => (accountKey(a.account) < accountKey(b.account) ? -1 : 1));
+  for (const p of ordered) {
+    const id = await accountId(t, p.account.kind, p.account.owner);
+    await t.query(`INSERT INTO ledger_entries (transaction_id, account_id, amount_paise) VALUES ($1, $2, $3)`, [txId, id, p.amount]);
+  }
+  return { applied: true };
+}
+
+// Same, in its own transaction.
+export async function postTransaction(db: Db, tx: LedgerTx, description?: string): Promise<PostResult> {
+  assertBalanced(tx);
+  return db.transaction((t) => postTransactionIn(t, description === undefined ? tx : { ...tx, description }));
 }
 
 export async function balanceOf(db: Queryable, kind: string, owner: string): Promise<number> {

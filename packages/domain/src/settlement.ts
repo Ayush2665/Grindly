@@ -36,6 +36,7 @@ export function planDaySettlement(i: SettleInput): SettleResult {
     const amt = out.released * i.unit;
     txs.push({
       key: `contract:${i.contractId}:day:${i.dayIndex}:release`,
+      description: `Verified day ${i.dayIndex}`,
       postings: [
         { account: escrow(i.contractId), amount: -amt },
         { account: { kind: "wallet", owner: i.userId }, amount: amt },
@@ -53,6 +54,7 @@ export function planDaySettlement(i: SettleInput): SettleResult {
     }
     txs.push({
       key: `contract:${i.contractId}:day:${i.dayIndex}:forfeit`,
+      description: i.mode === "NO_RISK" ? `Missed day ${i.dayIndex}, sent to friend` : `Missed day ${i.dayIndex}, sent to pool`,
       postings: [
         { account: escrow(i.contractId), amount: -amt },
         { account: dest, amount: amt },

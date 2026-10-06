@@ -19,6 +19,7 @@ export interface Posting {
 
 export interface LedgerTx {
   key: string; // idempotency key; the same key is never applied twice
+  description?: string; // shown in the wallet history
   postings: Posting[];
 }
 

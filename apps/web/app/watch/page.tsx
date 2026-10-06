@@ -22,10 +22,10 @@ export default function WatchPage() {
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(""), 3500); return () => clearTimeout(t); }, [toast]);
   // while waiting for the phone, check for the first Watch sample
   useEffect(() => {
-    if (!code || me?.link.linked) return;
+    if (!code || state !== "ready" || me?.link.linked) return;
     const t = setInterval(() => void refresh(), 3000);
     return () => clearInterval(t);
-  }, [code, me?.link.linked, refresh]);
+  }, [code, state, me?.link.linked, refresh]);
 
   if (state === "loading") return <Shell hello="" head="Loading…"><div /></Shell>;
   if (state === "signedOut" || !me) return <Login onDone={refresh} />;
