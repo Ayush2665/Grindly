@@ -4,7 +4,16 @@
   "private": true,
   "type": "module",
   "main": "src/index.ts",
-  "scripts": { "typecheck": "tsc -p .", "test": "vitest run" },
-  "dependencies": { "drizzle-orm": "^0.36.0", "@grindly/domain": "workspace:*" },
-  "devDependencies": { "@electric-sql/pglite": "^0.2.12", "fast-check": "^3.22.0" }
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.36.0",
+    "@grindly/domain": "workspace:*",
+    "@electric-sql/pglite": "^0.2.12"
+  },
+  "devDependencies": {
+    "fast-check": "^3.22.0"
+  }
 }

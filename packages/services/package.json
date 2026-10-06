@@ -1,0 +1,10 @@
+{
+  "name": "@grindly/services",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": { "typecheck": "tsc -p .", "test": "vitest run" },
+  "dependencies": { "@grindly/db": "workspace:*", "@grindly/domain": "workspace:*", "zod": "^3.23.0" },
+  "devDependencies": { "fast-check": "^3.22.0" }
+}
