@@ -7,3 +7,5 @@
 4. **No Risk example stake ₹1,620** (R=27, u=₹60) so the sample data respects the divisibility rule.
 5. **Static vanilla HTML/CSS/JS, Google Fonts only** (Plus Jakarta Sans). No build step; real UI is built in Next.js in a later phase.
 6. **Phone frame on desktop, full-bleed under 760px**, since the product is opened on a laptop first and on a phone later.
+7. **Direction B chosen; motion lives in `design/b-night/fx.js`**, hooked through `theme.afterRender` so A and C are untouched. Illustrations are hand-drawn inline SVG (no image files, no libraries). Scroll scenes use `position: sticky` inside the sheet and a scroll listener, so they work without GSAP. Trade-off: hand-drawn art is simpler than photo or 3D assets; swap later if wanted.
+8. **Reduced motion respected** via `prefers-reduced-motion`.

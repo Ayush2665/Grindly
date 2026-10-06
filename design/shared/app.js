@@ -218,6 +218,7 @@
         </div></div></div>
       </div>`;
     if (route === "create") wireCreate($(".phone"));
+    if (theme.afterRender) theme.afterRender(route, $(".phone"));
   }
   function go(r) { if (location.hash.slice(1) === r) render(r); else location.hash = r; }
   document.addEventListener("click", (e) => { const t = e.target.closest("[data-go]"); if (t) go(t.dataset.go); });
