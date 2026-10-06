@@ -69,6 +69,5 @@ Everything in `design/` uses made-up sample numbers. No server, no real data.
 
 ## Other documents
 - [PLAN.md](PLAN.md): architecture, money rules, phases (source of truth)
-- [CLAUDE.md](CLAUDE.md): working rules for the AI engineer
 - [TASKS.md](TASKS.md): checklist
 - [DECISIONS.md](DECISIONS.md): why things were decided
