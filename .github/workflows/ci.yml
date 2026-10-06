@@ -17,6 +17,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm --filter @grindly/web build
       - run: pnpm audit --audit-level high
         continue-on-error: true
 

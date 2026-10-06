@@ -1,6 +1,7 @@
 import type { Db, Queryable } from "@grindly/db";
-import { deriveTerms, localDate, stakeForUnit, transition, type GoalType, type Mode } from "@grindly/domain";
+import { addDays, deriveTerms, localDate, stakeForUnit, transition, type GoalType } from "@grindly/domain";
 import { assertWatchReady } from "./devices";
+import { verifyContractDay } from "./verifyDay";
 
 export interface NewContract {
   userId: string;
@@ -45,4 +46,23 @@ export async function ensureUser(db: Queryable, email: string, displayName: stri
     `INSERT INTO users (email, display_name, timezone) VALUES ($1,$2,$3) ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email RETURNING id`,
     [email.toLowerCase(), displayName, timezone]);
   return r.rows[0]!.id;
+}
+
+// After new samples arrive, re-check the days they fall on for the user's active contracts.
+export async function refreshAfterIngest(db: Queryable, userId: string, sampleStarts: string[]): Promise<void> {
+  if (sampleStarts.length === 0) return;
+  const cs = await db.query<{ id: string; timezone: string; start_date: string; window_days: number }>(
+    `SELECT id, timezone, to_char(start_date,'YYYY-MM-DD') AS start_date, window_days FROM contracts WHERE user_id = $1 AND state = 'ACTIVE'`, [userId]);
+  for (const c of cs.rows) {
+    const last = addDays(c.start_date, c.window_days - 1);
+    const dates = new Set(sampleStarts.map((s) => localDate(s, c.timezone)));
+    for (const d of [...dates].sort()) if (d >= c.start_date && d <= last) await verifyContractDay(db, c.id, d);
+  }
+}
+
+export async function listDays(db: Queryable, userId: string, contractId: string) {
+  const r = await db.query<{ local_date: string; verified: boolean; steps_total: number | null; workout_id: string | null; evidence: unknown; settled_at: string | null }>(
+    `SELECT to_char(d.local_date,'YYYY-MM-DD') AS local_date, d.verified, d.steps_total, d.workout_id, d.evidence, d.settled_at
+     FROM contract_days d JOIN contracts c ON c.id = d.contract_id WHERE c.id = $1 AND c.user_id = $2 ORDER BY d.local_date`, [contractId, userId]);
+  return r.rows;
 }

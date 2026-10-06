@@ -17,3 +17,12 @@
 12. **RLS uses a SECURITY DEFINER helper** (`my_contract_ids()`). The first version had a policy that read its own table and recursed; a test caught it.
 13. **Env validation lives in its own package** so the web app and the settlement job share it. Live Razorpay keys are refused at boot.
 14. **Next.js app not scaffolded yet.** It adds nothing testable in this phase; the design mockups become the real UI in Phase 3.
+
+## 2026-10-06 · Phase 3
+15. **Local dev database is PGlite saved in `apps/web/.data`.** Docker was not running and Supabase CLI is not installed; PGlite needs nothing. Trade-off: it is single-connection. Swap to Supabase Postgres by changing `getDb()` in `apps/web/src/server/runtime.ts`.
+16. **Dev sign-in instead of real auth.** Real auth needs a Supabase project (your account). Dev sign-in is switched off in production. Signed HttpOnly cookie; same-origin check for POSTs.
+17. **Contracts are created with simulated payment** (`createContractSimulatedPayment`) until Razorpay arrives in Phase 5. It still requires a linked Watch that synced in the last 24 hours.
+18. **Verification runs when samples arrive and when you open the dashboard**, not on a schedule. Hourly settlement comes with money in Phase 5/6.
+19. **"Steps without heart rate" only blocks if the Watch normally records heart rate** (any Watch heart-rate sample in the previous 7 days). Otherwise users who turn heart rate off would never pass.
+20. **Simulated Watch times are fixed offsets from local midnight** so fake and real workouts do not overlap. Early in the local day (before about 00:40) the 45 minute preset ends in the future and is rejected.
+21. **Stray `package-lock.json` in your home folder** made Next.js guess the wrong project root; fixed with `outputFileTracingRoot`.

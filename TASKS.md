@@ -24,4 +24,13 @@
 - [ ] Multi-connection concurrency test on real Postgres
 - [ ] **STOP: Phase 2 gate, user review**
 
-## Phase 3+ — not started
+## Phase 3 — Watch ingestion
+- [x] packages/services: pairing codes, device tokens (hash only), revoke, link status, 24h sync gate
+- [x] Ingestion: Zod per sample, idempotent by hk_uuid, 500/batch cap, per-sample accept/reject reasons (30 tests)
+- [x] Per-day verification from stored raw samples (steps and gym), re-run safe, settled days never change
+- [x] apps/web (Next.js): API routes, signed-cookie dev sign-in, rate limits, CSRF checks, security headers
+- [x] Real pages in the Night look: Home, Link Watch, Simulated Watch panel (dev only), today's verdict
+- [x] 25 API tests + 6 Playwright browser tests
+- [ ] **STOP: Phase 3 gate, user review**
+
+## Phase 4+ — not started

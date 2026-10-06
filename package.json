@@ -8,9 +8,12 @@
   "scripts": {
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "dev": "pnpm --filter @grindly/web dev",
+    "e2e": "pnpm --filter @grindly/web e2e",
     "ci": "pnpm typecheck && pnpm test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@types/node": "^20.19.43",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
