@@ -1,0 +1,27 @@
+/* Direction C — Ember Paper */
+:root {
+  --hero-bg: #f6efe4; --hero-ink: #1c1511; --hero-ink-soft: #7d6e66;
+  --chip-bg: #fff; --chip-line: #e6dccd;
+  --page-bg: #d9cfc0; --phone-bg: #f6efe4;
+  --sheet-bg: #fffaf2;
+  --card: #fff; --card-line: #eadfce; --card-shadow: none;
+  --accent: #e8531d; --accent-soft: #fde9dc;
+  --accent-grad: #e8531d;
+  --dot-on: #e8531d; --dot-rest: #f4bf9f; --dot-off: #ece3d6;
+  --nav-bg: #1c1511; --radius: 16px;
+  --font: "Plus Jakarta Sans", Georgia, serif;
+}
+.switcher { color: #3b2f27; } .switcher p { color: #6d5d52; }
+.switcher button, .switcher a { color: #3b2f27; background: rgba(0,0,0,.06); }
+.switcher .back { background: none; color: #6d5d52; }
+.phone { box-shadow: 0 0 0 2px #cbbfae, 0 30px 70px rgba(60,40,20,.25); }
+.headline { font-size: 30px; font-weight: 800; letter-spacing: -.035em; }
+.hero { padding-bottom: 40px; border-bottom: 1px solid #eadfce; }
+.sheet { border-radius: 0; margin-top: 0; }
+.sheet::before { display: none; }
+.statusbar, .hero .roundbtn { color: #1c1511; }
+.pill { color: var(--accent); } .avatar { background: #1c1511; color: #fff; border-color: transparent; }
+.btn { box-shadow: none; border-radius: 14px; }
+.nav button { background: transparent; color: #cdbfb3; } .nav button.on { background: var(--accent); box-shadow: none; }
+.nav { box-shadow: 0 10px 26px rgba(28,21,17,.3); }
+.card h3, .bigbal, .stat2 .n { font-family: Georgia, "Times New Roman", serif; font-weight: 700; }

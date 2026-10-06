@@ -1,0 +1,20 @@
+/* Direction B — Ember Night */
+:root {
+  --hero-bg: radial-gradient(120% 90% at 20% 0%, #ff6a2a 0%, #b5320f 38%, #2a1510 80%);
+  --page-bg: #0c0908; --phone-bg: #15100e;
+  --sheet-bg: linear-gradient(#1c1512, #15100e);
+  --card: #251b17; --card-line: rgba(255,140,80,.12); --card-shadow: 0 8px 26px rgba(0,0,0,.35);
+  --ink: #fbf1ea; --muted: #a8968b;
+  --accent: #ff7a2f; --accent-soft: rgba(255,122,47,.16);
+  --dot-on: #ff7a2f; --dot-rest: #6b3a24; --dot-off: #372a24;
+  --nav-bg: rgba(37,27,23,.88);
+  --good: #3ddc84; --bad: #ff6159;
+  --test-bg: #ffb020; --test-ink: #2a1a00;
+}
+.seg button { background: var(--card); border-color: #372a24; }
+.seg button.on { border-color: var(--accent); }
+.badge.ok { background: rgba(61,220,132,.16); }
+.week .c.today { background: transparent; }
+.btn { box-shadow: 0 8px 26px rgba(255,122,47,.35); }
+.sheet::before { background: #4a3a33; }
+.dots i.v { box-shadow: 0 0 8px rgba(255,122,47,.55); }
