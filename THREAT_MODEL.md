@@ -33,6 +33,8 @@ Status: **Done** = built and tested. **Planned** = depends on a later phase (the
 | 18 | Web attacks (XSS, CSRF, clickjacking) | Script injection or forged requests | CSP and security headers on every page, HttpOnly SameSite=Lax signed cookies, same-origin check plus JSON-only bodies on cookie routes, Zod on every input, body size caps | Mostly **Done**. The CSP still allows inline scripts (Next.js needs nonces to remove that), and cookies are not `Secure` until HTTPS is used. **Planned** (Phase 7) |
 
 ## Known gaps in Phase 3
+- The dev "close day" endpoint settles a day immediately (a way to skip the wait). It exists only outside production (404 there, tested) and only for your own contracts.
+- Simulated withdraw has a per-key idempotency check and a rate limit, and is audited, but there is no payout provider behind it.
 - Sign-in is a dev-only email box with no password. It is switched off in production and replaced by real auth later. Until then, nobody should be able to reach this server from outside your laptop.
 - Rate limits are in memory, so they reset when the server restarts and do not work across several servers.
 - A `hk_uuid` is unique across all users. Someone who knew another user's sample id could make that sample count as a duplicate. HealthKit ids are random so this is hard to exploit, but it is worth fixing when real accounts exist.

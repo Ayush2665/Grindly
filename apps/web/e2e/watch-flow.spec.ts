@@ -7,7 +7,7 @@ async function signIn(page: Page) {
   await page.getByPlaceholder("Your name").fill("E2E User");
   await page.getByPlaceholder("Email").fill(email);
   await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page.getByText("Your Watch", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Your contracts", { exact: true })).toBeVisible();
 }
 
 // Link a Watch the way the iPhone app will: website shows a code, the phone redeems it and uploads.

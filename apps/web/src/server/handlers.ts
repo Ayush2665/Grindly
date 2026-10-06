@@ -2,7 +2,8 @@ import { z } from "zod";
 import { localDate } from "@grindly/domain";
 import {
   createContractSimulatedPayment, createPairingCode, ensureUser, ingestBatch, linkStatus, listContracts, listDays,
-  redeemPairingCode, refreshAfterIngest, revokeDevice, verifyContractDay, WatchRequiredError, type AuthedDevice,
+  redeemPairingCode, refreshAfterIngest, revokeDevice, settleNextDay, verifyContractDay, walletSummary, withdrawSimulated,
+  WatchRequiredError, WithdrawError, type AuthedDevice,
 } from "@grindly/services";
 import { requireDevice, requireUser } from "./auth";
 import { clientIp, fail, json, rateLimited, readJson } from "./http";
@@ -163,4 +164,48 @@ export async function devContract(req: Request): Promise<Response> {
     if (e instanceof WatchRequiredError) return fail(409, e.message);
     throw e;
   }
+}
+
+// ---------- wallet ----------
+export async function wallet(req: Request): Promise<Response> {
+  const a = requireUser(req, { mutating: false });
+  if (a instanceof Response) return a;
+  return json(await walletSummary(await getDb(), a.userId));
+}
+
+const withdrawBody = z.object({ amountPaise: z.number().int().positive().max(1_000_000_000), idempotencyKey: z.string().min(8).max(64).regex(/^[A-Za-z0-9-]+$/) }).strict();
+
+export async function withdraw(req: Request): Promise<Response> {
+  const a = requireUser(req, { mutating: true });
+  if (a instanceof Response) return a;
+  if (rateLimited(`withdraw:${a.userId}`, 10, 60_000)) return fail(429, "slow down");
+  const b = await readJson(req, MAX_SMALL_BYTES);
+  if (!b.ok) return b.res;
+  const p = withdrawBody.safeParse(b.body);
+  if (!p.success) return fail(400, "amountPaise and idempotencyKey are required");
+  try {
+    const r = await withdrawSimulated(await getDb(), a.userId, p.data.amountPaise, p.data.idempotencyKey);
+    return json({ ok: true, repeated: !r.applied });
+  } catch (e) {
+    if (e instanceof WithdrawError) return fail(409, e.message);
+    throw e;
+  }
+}
+
+// ---------- dev only: pretend a day has passed ----------
+const settleBody = z.object({ contractId: z.string().uuid() }).strict();
+
+export async function devSettle(req: Request): Promise<Response> {
+  if (!devToolsEnabled()) return fail(404, "not found");
+  const a = requireUser(req, { mutating: true });
+  if (a instanceof Response) return a;
+  const b = await readJson(req, MAX_SMALL_BYTES);
+  if (!b.ok) return b.res;
+  const p = settleBody.safeParse(b.body);
+  if (!p.success) return fail(400, "bad contract id");
+  const db = await getDb();
+  const own = await db.query(`SELECT 1 FROM contracts WHERE id = $1 AND user_id = $2`, [p.data.contractId, a.userId]);
+  if (own.rows.length === 0) return fail(404, "contract not found");
+  const r = await settleNextDay(db, p.data.contractId, { force: true });
+  return json({ settled: r });
 }

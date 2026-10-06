@@ -31,6 +31,9 @@
 - [x] apps/web (Next.js): API routes, signed-cookie dev sign-in, rate limits, CSRF checks, security headers
 - [x] Real pages in the Night look: Home, Link Watch, Simulated Watch panel (dev only), today's verdict
 - [x] 25 API tests + 6 Playwright browser tests
+- [x] Mockup screens moved into the real app: scroll scenes, Today, Create goal, Wallet and ledger, No Risk (labelled preview)
+- [x] Pulled forward from later phases so the Wallet is real: contract funding into escrow, day settlement, simulated withdraw, dev "close day" button
+- [ ] Still not built: Razorpay, hourly job endpoint, pool bonus and interest, friend mode, real iPhone app
 - [ ] **STOP: Phase 3 gate, user review**
 
 ## Phase 4+ — not started

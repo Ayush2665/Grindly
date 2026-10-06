@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { openPglite } from "@grindly/db";
-import { contractDays, devContract, devLogin, devWatchSend, ingest, me, pairDevice, pairingCode, revoke } from "../src/server/handlers";
+import { contractDays, devContract, devLogin, devSettle, devWatchSend, ingest, me, pairDevice, pairingCode, revoke, wallet, withdraw } from "../src/server/handlers";
 import { resetRateLimits } from "../src/server/http";
 import { setDbForTests } from "../src/server/runtime";
 import { makeSessionCookie } from "../src/server/session";
@@ -234,5 +234,60 @@ describe("simulated Watch panel", () => {
     const cookie = makeSessionCookie("11111111-1111-1111-1111-111111111111").split(";")[0]!;
     expect((await devWatchSend(post("/api/dev/watch", { preset: "steps_5000" }, { cookie }))).status).toBe(404);
     expect((await devContract(post("/api/dev/contract", { goal: "STEPS_10K", windowDays: 30, unitPaise: 10000 }, { cookie }))).status).toBe(404);
+  });
+});
+
+describe("wallet and settlement", () => {
+  async function paidDay() {
+    const c = await signIn();
+    const dev = await linkWatch(c);
+    await ingest(post("/api/v1/ingest/batch", { samples: [watchSteps(10)] }, bearer(dev.token)));
+    const k = await j(await devContract(post("/api/dev/contract", { goal: "STEPS_10K", windowDays: 30, unitPaise: 10000 }, { cookie: c })));
+    await ingest(post("/api/v1/ingest/batch", { samples: [watchSteps(10500)] }, bearer(dev.token)));
+    const s = await j(await devSettle(post("/api/dev/settle", { contractId: k.id }, { cookie: c })));
+    return { c, contractId: k.id as string, settled: s.settled };
+  }
+  it("shows the funded stake in escrow before any day is paid", async () => {
+    const c = await signIn();
+    const dev = await linkWatch(c);
+    await ingest(post("/api/v1/ingest/batch", { samples: [watchSteps(10)] }, bearer(dev.token)));
+    await devContract(post("/api/dev/contract", { goal: "STEPS_10K", windowDays: 30, unitPaise: 10000 }, { cookie: c }));
+    const w = await j(await wallet(get("/api/v1/wallet", { cookie: c })));
+    expect(w).toMatchObject({ balancePaise: 0, escrowPaise: 270000 });
+    expect(w.entries[0]).toMatchObject({ title: "Funded contract (test payment)", amountPaise: -270000 });
+  });
+  it("a verified day releases one unit to the wallet", async () => {
+    const { c, settled } = await paidDay();
+    expect(settled).toMatchObject({ dayIndex: 1, verified: true, releasedPaise: 10000 });
+    const w = await j(await wallet(get("/api/v1/wallet", { cookie: c })));
+    expect(w).toMatchObject({ balancePaise: 10000, escrowPaise: 260000 });
+  });
+  it("needs sign in, and one user cannot settle another user's contract", async () => {
+    expect((await wallet(get("/api/v1/wallet"))).status).toBe(401);
+    const { contractId } = await paidDay();
+    const other = await signIn("other@example.com");
+    expect((await devSettle(post("/api/dev/settle", { contractId }, { cookie: other }))).status).toBe(404);
+    expect((await devSettle(post("/api/dev/settle", { contractId: "nope" }, { cookie: other }))).status).toBe(400);
+  });
+  it("withdraws once per key and refuses more than the balance", async () => {
+    const { c } = await paidDay();
+    const w1 = (amountPaise: number, idempotencyKey: string) => withdraw(post("/api/v1/wallet/withdraw", { amountPaise, idempotencyKey }, { cookie: c }));
+    expect((await w1(10001, "key-aaaaaaaa")).status).toBe(409);
+    expect((await w1(-5, "key-aaaaaaaa")).status).toBe(400);
+    expect((await w1(1.5, "key-aaaaaaaa")).status).toBe(400);
+    expect(await j(await w1(4000, "key-bbbbbbbb"))).toMatchObject({ ok: true, repeated: false });
+    expect(await j(await w1(4000, "key-bbbbbbbb"))).toMatchObject({ ok: true, repeated: true });
+    expect((await j(await wallet(get("/api/v1/wallet", { cookie: c })))).balancePaise).toBe(6000);
+  });
+  it("refuses cross-site withdrawals", async () => {
+    const { c } = await paidDay();
+    const r = await withdraw(post("/api/v1/wallet/withdraw", { amountPaise: 100, idempotencyKey: "key-cccccccc" }, { cookie: c, origin: "https://evil.example" }));
+    expect(r.status).toBe(403);
+  });
+  it("the fast-forward button does not exist in production", async () => {
+    const { c, contractId } = await paidDay();
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("SESSION_SECRET", "s".repeat(40));
+    expect((await devSettle(post("/api/dev/settle", { contractId }, { cookie: c }))).status).toBe(404);
   });
 });

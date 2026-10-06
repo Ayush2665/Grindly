@@ -2,7 +2,7 @@
 export interface Me {
   user: { id: string; email: string; name: string; timezone: string };
   link: { linked: boolean; fresh: boolean; deviceId: string | null; productType: string | null; lastSyncAt: string | null; waitingForFirstSample: boolean };
-  contracts: Array<{ id: string; goal_type: string; state: string; window_days: number; required_days: number; stake_paise: number; unit_paise: number; start_date: string; verified_units: number; days_closed: number }>;
+  contracts: Array<{ id: string; goal_type: string; state: string; window_days: number; required_days: number; stake_paise: number; unit_paise: number; start_date: string; verified_units: number; forfeited_units: number; days_closed: number }>;
   today: null | { contractId: string; goal: string; localDate: string; verified: boolean; stepsTotal: number | null; workoutId: string | null; rejected: Array<{ hkUuid: string; reason: string }>; flags: Array<{ code: string; blocking: boolean }> };
   devTools: boolean;
   presets: Array<{ id: string; label: string; group: "real" | "fake"; hint: string }>;
@@ -14,7 +14,10 @@ export async function api<T = unknown>(path: string, body?: unknown): Promise<{ 
   return { ok: res.ok, status: res.status, data };
 }
 
-export const inr = (paise: number) => "₹" + Math.floor(paise / 100).toLocaleString("en-IN") + (paise % 100 ? "." + String(paise % 100).padStart(2, "0") : "");
+export const inr = (paise: number) => {
+  const a = Math.abs(paise);
+  return (paise < 0 ? "-" : "") + "₹" + Math.floor(a / 100).toLocaleString("en-IN") + (a % 100 ? "." + String(a % 100).padStart(2, "0") : "");
+};
 
 export const REASONS: Record<string, string> = {
   NOT_WATCH: "Not from a Watch", USER_ENTERED: "Typed in by hand", DUPLICATE: "Duplicate", OUTSIDE_DAY: "Different day", TOO_LATE: "Uploaded too late",

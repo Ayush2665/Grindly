@@ -26,3 +26,7 @@
 19. **"Steps without heart rate" only blocks if the Watch normally records heart rate** (any Watch heart-rate sample in the previous 7 days). Otherwise users who turn heart rate off would never pass.
 20. **Simulated Watch times are fixed offsets from local midnight** so fake and real workouts do not overlap. Early in the local day (before about 00:40) the 45 minute preset ends in the future and is rejected.
 21. **Stray `package-lock.json` in your home folder** made Next.js guess the wrong project root; fixed with `outputFileTracingRoot`.
+22. **Wallet and day settlement pulled forward from Phases 5/6.** You asked for the whole mockup in the real app, and a wallet with real numbers needs money to move. Funding is simulated (no Razorpay), settlement runs only from a dev button or `settleDueDays()`, and there is no pool bonus, interest, or friend mode yet. Everything uses the same ledger rules and tests as the plan describes.
+23. **No Risk page is a labelled preview with sample data**, and the Create button for it is disabled. Showing fake friend data as if it were live would be misleading.
+24. **Scroll scenes show example numbers**, labelled "(example)". They explain how a day counts; they do not read your data.
+25. **`overflow-x: clip` instead of `hidden` on the app frame**, because `hidden` breaks `position: sticky`, which the scroll scenes rely on.
